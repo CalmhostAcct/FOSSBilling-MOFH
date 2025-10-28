@@ -494,7 +494,7 @@ class Server_Manager_Mofh extends Server_Manager
         // MOFH API only returns package names
         if (isset($pkgs->package)) {
             foreach ($pkgs->package as $pkgName) {
-				$name = (string) $pkgName;
+                $name = (string) $pkgName;
                 $return[] = [
                     'title' => $name,
                     'name' => $name,
