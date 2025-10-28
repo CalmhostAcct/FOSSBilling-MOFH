@@ -1,6 +1,6 @@
 # FOSSBilling-MOFH
 
-**Unofficial MyOwnFreeHost (MOFH) Server Manager for FOSSBilling (Untested)**
+**Unofficial MyOwnFreeHost (MOFH) Server Manager for FOSSBilling (Working)**
 
 This unofficial module adds full integration between [FOSSBilling](https://www.fossbilling.org) and [MyOwnFreeHost](https://www.myownfreehost.net), allowing you to automatically create, suspend, and manage free hosting accounts through your MOFH reseller API.
 
@@ -11,8 +11,7 @@ This unofficial module adds full integration between [FOSSBilling](https://www.f
 - ✅ Create, suspend, unsuspend, and terminate hosting accounts  
 - ✅ Change account passwords and packages  
 - ✅ Retrieve available packages (via JSON API)  
-- ✅ Uses `/xml-api/$function` endpoints for all operations  
-- ✅ Uses `/json-api/listpkgs` for listing packages (since XML version is broken)  
+- ✅ Uses `/json-api/$function` endpoints for all operations  
 - ✅ Dynamic cPanel login URLs (`https://cpanel.<reseller-domain>`)  
 - ✅ Configurable reseller domain, API username, and key  
 - ✅ Full cURL error handling and logging  
@@ -50,21 +49,8 @@ This unofficial module adds full integration between [FOSSBilling](https://www.f
 
 ## 🧠 Usage Notes
 
-- The module uses the **MOFH XML API** for all major functions:
-- `/xml-api/version`
-- `/xml-api/createacct`
-- `/xml-api/suspendacct`
-- `/xml-api/unsuspendacct`
-- `/xml-api/removeacct`
-- `/xml-api/changepackage`
-- `/xml-api/passwd`
+- The module uses the **MOFH JSON API** for all major functions:
 
-- The **`listpkgs`** function uses the **JSON API** endpoint:
-```
-
-[https://panel.myownfreehost.net/json-api/listpkgs](https://panel.myownfreehost.net/json-api/listpkgs)
-
-```
 
 - Unsupported operations such as IP or username changes will return standardized FOSSBilling `Server_Exception` messages.
 
@@ -84,25 +70,7 @@ If your reseller domain is `examplehost.com`, the client login will be
 ---
 
 ## 🧾 License
-
-```
-
-Copyright 2022-2025 FOSSBilling-MOFH
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-```
-http://www.apache.org/licenses/LICENSE-2.0
-```
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-```
+FOSSBilling-MOFH works and it is licensed under Apache 2.0.
 
 ---
 
