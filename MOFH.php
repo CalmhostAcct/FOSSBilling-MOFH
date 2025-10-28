@@ -264,7 +264,7 @@ if (!isset($json->result) && !isset($json->cpanelresult) && !isset($json->status
 
     private function getPackageName(Server_Package $package): string
     {
-        return $this->_config['username'] . '_' . $package->getName();
+        return $package->getName();
     }
 	// Example for changeAccountUsername
 public function changeAccountUsername(Server_Account $account, string $newUsername): never
