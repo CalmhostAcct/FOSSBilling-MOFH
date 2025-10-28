@@ -139,20 +139,39 @@ class Server_Manager_Mofh extends Server_Manager
         return true;
     }
 
-    public function getPackages(): array
-    {
-        $pkgs = $this->request('listpkgs');
-        $return = [];
-        foreach ($pkgs->package as $pkg) {
-            $return[] = [
-                'title' => $pkg->name,
-                'name' => $pkg->name,
-                'quota' => $pkg->QUOTA ?? null,
-                'bandwidth' => $pkg->BWLIMIT ?? null,
-            ];
-        }
-        return $return;
+    public function getPackages(): array 
+	{
+    $pkgs = $this->request('listpkgs');
+
+    // Defensive: If no package data returned, return empty.
+    if (!isset($pkgs->package) || !is_array($pkgs->package)) {
+        return [];
     }
+
+    $return = [];
+    foreach ($pkgs->package as $pkg) {
+        // Defensive: if $pkg is not an object (sometimes can be stdClass or array)
+        if (!is_object($pkg)) continue;
+
+        // Helper function to cast to int if numeric, else null
+        $intOrNull = function($val) {
+            if (is_numeric($val)) {
+                return (int)$val;
+            }
+            return null;
+        };
+
+        $return[] = [
+            'title'     => isset($pkg->name) ? (string)$pkg->name : '',
+            'name'      => isset($pkg->name) ? (string)$pkg->name : '',
+            'quota'     => isset($pkg->QUOTA) ? $intOrNull($pkg->QUOTA) : null,
+            'bandwidth' => isset($pkg->BWLIMIT) ? $intOrNull($pkg->BWLIMIT) : null,
+            // You can add other fields here if needed
+        ];
+    }
+    return $return;
+}
+
 
 private function request(string $action, array $params = []): mixed
 {
