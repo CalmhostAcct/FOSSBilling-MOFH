@@ -10,12 +10,14 @@
  */
 
 use Random\RandomException;
-use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+// Removed unused Symfony Exception interface
+// use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 
 /**
  * MOFH API.
+ * Uses json-api/ endpoints with HTTP Basic Authentication
  *
- * @see https://myownfreehost.net/xml-api/
+ * @see https://myownfreehost.net/xml-api/ (Links to API docs)
  */
 class Server_Manager_Mofh extends Server_Manager
 {
@@ -80,22 +82,22 @@ class Server_Manager_Mofh extends Server_Manager
         // This function MUST be here to check the config.
         // If this is empty, all API calls will fail.
         /**
-        if (empty($this->_config['host'])) {
-            throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'hostname (e.g., panel.myownfreehost.net)'], 2001);
-        }
+         if (empty($this->_config['host'])) {
+             throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'hostname (e.g., panel.myownfreehost.net)'], 2001);
+         }
 
-        if (empty($this->_config['api_username'])) {
-            throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'API Username'], 2001);
-        }
+         if (empty($this->_config['api_username'])) {
+             throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'API Username'], 2001);
+         }
 
-        if (empty($this->_config['api_key'])) {
-            throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'API Key'], 2001);
-        }
+         if (empty($this->_config['api_key'])) {
+             throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'API Key'], 2001);
+         }
 
-        if (empty($this->_config['cpanel_host'])) {
-            throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'cPanel Host'], 2001);
-        }
-        */
+         if (empty($this->_config['cpanel_host'])) {
+             throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'cPanel Host'], 2001);
+         }
+         */
         // === END FIX ===
     }
 
@@ -139,6 +141,7 @@ class Server_Manager_Mofh extends Server_Manager
      */
     public function testConnection(): bool
     {
+        // Corrected syntax: $this->
         $this->request('listpkgs');
 
         return true;
@@ -195,11 +198,19 @@ class Server_Manager_Mofh extends Server_Manager
             'user' => $account->getUsername(),
         ];
 
+        // Corrected syntax: $this->
         $result = $this->request($action, $varHash);
-        if (!isset($result->status)) {
-            error_log('Could not synchronize account with MOFH server. Account does not exist or API error.');
 
-            return $account;
+        // Check for 'status' property
+        if (!isset($result->status)) {
+            // Check for 'account_status' as a fallback
+            if (isset($result->account_status)) {
+                $result->status = $result->account_status;
+            } else {
+                error_log('Could not synchronize account with MOFH server. Account does not exist or API error.');
+
+                return $account;
+            }
         }
 
         $new = clone $account;
@@ -235,7 +246,8 @@ class Server_Manager_Mofh extends Server_Manager
         $package = $account->getPackage();
 
         // Check if the package exists on the MOFH server
-        $this.checkPackageExists($package, true);
+        // Corrected syntax: $this->
+        $this->checkPackageExists($package, true);
 
         // Prepare the parameters for the API request
         $action = 'createacct';
@@ -243,17 +255,20 @@ class Server_Manager_Mofh extends Server_Manager
             'username' => $account->getUsername(), // This is the "suggested" username
             'domain' => $account->getDomain(),
             'password' => $account->getPassword(),
-            'email' => $client->getEmail(),
-            'plan' => $this.getPackageName($package),
+            'contactemail' => $client->getEmail(),
+            // Corrected syntax: $this->
+            'plan' => $this->getPackageName($package),
         ];
 
         // Send the request to the MOFH API. It will throw on error.
-        $response = $this.request($action, $varHash);
+        // Corrected syntax: $this->
+        $response = $this->request($action, $varHash);
 
         // MOFH API returns the *actual* username in vp_username
         if (isset($response->vp_username)) {
             $actual_username = (string) $response->vp_username;
-            $this.getLog()->info(sprintf('MOFH account creation sent username %s, API returned actual username %s', $account->getUsername(), $actual_username));
+            // Corrected syntax: $this->
+            $this->getLog()->info(sprintf('MOFH account creation sent username %s, API returned actual username %s', $account->getUsername(), $actual_username));
 
             // Update the account object with the real username returned by the API
             $account->setUsername($actual_username);
@@ -261,7 +276,8 @@ class Server_Manager_Mofh extends Server_Manager
             // This is an error case. The request() function should have thrown
             // an exception on failure, but if it succeeded without returning
             // a vp_username, something is wrong with the API response.
-            $this.getLog()->crit('MOFH API successful response did not include vp_username. Account username may be incorrect.');
+            // Corrected syntax: $this->
+            $this->getLog()->crit('MOFH API successful response did not include vp_username. Account username may be incorrect.');
         }
 
         // Return the result of the account creation
@@ -290,7 +306,8 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this.request($action, $varHash);
+        // Corrected syntax: $this->
+        $this->request($action, $varHash);
 
         return true;
     }
@@ -316,7 +333,8 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this.request($action, $varHash);
+        // Corrected syntax: $this->
+        $this->request($action, $varHash);
 
         return true;
     }
@@ -333,7 +351,8 @@ class Server_Manager_Mofh extends Server_Manager
     public function cancelAccount(Server_Account $account): bool
     {
         // Log the cancellation
-        $this.getLog()->info('Canceling account ' . $account->getUsername());
+        // Corrected syntax: $this->
+        $this->getLog()->info('Canceling account ' . $account->getUsername());
 
         // Define the action and parameters for the API request
         $action = 'removeacct';
@@ -342,7 +361,8 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this.request($action, $varHash);
+        // Corrected syntax: $this->
+        $this->request($action, $varHash);
 
         return true;
     }
@@ -360,19 +380,23 @@ class Server_Manager_Mofh extends Server_Manager
     public function changeAccountPackage(Server_Account $account, Server_Package $package): bool
     {
         // Log the package change
-        $this.getLog()->info('Changing account ' . $account->getUsername() . ' package');
+        // Corrected syntax: $this->
+        $this->getLog()->info('Changing account ' . $account->getUsername() . ' package');
 
         // Check if the package exists on the MOFH server
-        $this.checkPackageExists($package, true);
+        // Corrected syntax: $this->
+        $this->checkPackageExists($package, true);
 
         // Define the action and parameters for the API request
         $varHash = [
             'user' => $account->getUsername(),
-            'plan' => $this.getPackageName($package),
+            // Corrected syntax: $this->
+            'pkg' => $this->getPackageName($package),
         ];
 
         // Send the request to the MOFH API
-        $this.request('changepackage', $varHash);
+        // Corrected syntax: $this->
+        $this->request('changepackage', $varHash);
 
         return true;
     }
@@ -390,7 +414,8 @@ class Server_Manager_Mofh extends Server_Manager
     public function changeAccountPassword(Server_Account $account, string $newPassword): bool
     {
         // Log the password change
-        $this.getLog()->info('Changing account ' . $account->getUsername() . ' password');
+        // Corrected syntax: $this->
+        $this->getLog()->info('Changing account ' . $account->getUsername() . ' password');
 
         // Define the action and parameters for the API request
         $action = 'passwd';
@@ -400,7 +425,8 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this.request($action, $varHash);
+        // Corrected syntax: $this->
+        $this->request($action, $varHash);
 
         return true;
     }
@@ -460,14 +486,15 @@ class Server_Manager_Mofh extends Server_Manager
     public function getPackages(): array
     {
         // Send a request to the MOFH server to list the packages
-        $pkgs = $this.request('listpkgs');
+        // Corrected syntax: $this->
+        $pkgs = $this->request('listpkgs');
         $return = [];
 
         // Iterate over the packages and add their details to the return array
         // MOFH API only returns package names
         if (isset($pkgs->package)) {
             foreach ($pkgs->package as $pkgName) {
-                $name = (string) $pkgName;
+				$name = (string) $pkgName;
                 $return[] = [
                     'title' => $name,
                     'name' => $name,
@@ -479,98 +506,126 @@ class Server_Manager_Mofh extends Server_Manager
     }
 
     /**
-     * Sends a request to the MOFH server and returns the response.
-     * This method sends a request to the MOFH server using the provided action and parameters.
-     * It handles the creation of the HTTP client, the construction of the request URL,
-     * authentication, and the sending of the request. It also handles any errors that may occur,
-     * logging them and throwing a Server_Exception if necessary.
+     * Sends a request to the MOFH json-api/ endpoints.
      *
      * @param string $action the action to be performed on the MOFH server (e.g., 'createacct')
      * @param array  $params the parameters to be sent with the request
      *
-     * @return mixed the response from the MOFH server, decoded from XML into a SimpleXMLElement
+     * @return mixed the response from the MOFH server, decoded from JSON
      *
      * @throws Server_Exception if an error occurs during the request, or if the response from the MOFH server indicates an error
      */
     private function request(string $action, array $params = []): mixed
     {
-        // Create the HTTP client with the necessary options
-        $client = $this.getHttpClient()->withOptions([
-            'verify_peer' => false,
-            'verify_host' => false,
-            'timeout' => 90, // Account creation can timeout if set too low
-        ]);
+        // Build URL
+        $url = ($this->_config['secure'] ? 'https' : 'http') . '://' . $this->_config['host'] . '/json-api/' . $action . '.php';
 
-        // Construct the request URL
-        // MOFH API uses /xml-api/action.php
-        $url = ($this->_config['secure'] ? 'https' : 'http') . '://' . $this->_config['host'] . '/xml-api/' . $action . '.php';
+        // Get auth creds
+        $username = $this->_config['api_username'];
+        $password = $this->_config['api_key'];
 
-        // Add MOFH authentication parameters to the body
-        $params['api_user'] = $this->_config['api_username'];
-        $params['api_key'] = $this->_config['api_key'];
+        // Log the request (without password)
+        $this->getLog()->debug(sprintf('Requesting MOFH json-api action "%s" with params "%s" ', $action, print_r($params, true)));
 
-        // Log the request
-        // Don't log api_key
-        $logParams = $params;
-        $logParams['api_key'] = '***';
-        $this.getLog()->debug(sprintf('Requesting MOFH server action "%s" with params "%s" ', $action, print_r($logParams, true)));
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 90);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-        // Send the request and handle any errors
-        try {
-            $response = $client->request('POST', $url, [
-                'body' => $params,
-            ]);
-        } catch (HttpExceptionInterface $error) {
-            $e = new Server_Exception('HttpClientException: :error', [':error' => $error->getMessage()]);
-            $this.getLog()->err($e->getMessage());
+        // Set HTTP Basic Auth
+        curl_setopt($ch, CURLOPT_USERPWD, "{$username}:{$password}");
 
-            throw $e;
+        // Define which actions are POST
+        // 'accountstatus' is not in the user's list, but it takes a 'user' param, so we assume POST.
+        $postActions = ['createacct', 'suspendacct', 'unsuspendacct', 'removeacct', 'passwd', 'changepackage', 'accountstatus'];
+
+        if (in_array($action, $postActions)) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        } else {
+            // This is a GET request (e.g., listpkgs, version)
+            curl_setopt($ch, CURLOPT_POST, false);
         }
 
-        // Decode the response from XML into a PHP variable
-        $body = $response->getContent();
+        $body = curl_exec($ch);
 
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($body);
+        // Check for cURL errors
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+            curl_close($ch);
+            $e = new Server_Exception('cURL Error: :error', [':error' => $error_msg]);
+            $this->getLog()->err($e->getMessage());
+            throw $e;
+        }
+        curl_close($ch);
 
-        // Check the response for errors
-        if ($xml === false) {
-            // Not XML. Could be a plain text error.
-            if (stripos($body, 'error') !== false || stripos($body, 'failed') !== false || stripos($body, 'denied') !== false) {
-                $this.getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $body));
-                $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $body];
+        // Decode JSON
+        $json = json_decode($body);
 
+        // Check for JSON decoding errors
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Handle plain text "Authentication Failed"
+            if (stripos($body, 'Authentication Failed') !== false) {
+                $msg = 'Authentication Failed. Please check your API Username and Key.';
+                $this->getLog()->crit(sprintf('MOFH json-api error calling action "%s": "%s"', $action, $msg));
+                $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $msg];
                 throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
             }
 
-            $msg = sprintf('Function call "%s" response is invalid, body: %s', $action, $body);
-            $this.getLog()->crit($msg);
-
+            $msg = sprintf('Function call "%s" (json-api) response is invalid, body: %s', $action, $body);
+            $this->getLog()->crit($msg);
             $placeholders = [':action:' => $action, ':type:' => 'MOFH'];
-
             throw new Server_Exception('Failed to :action: on the :type: server, check the error logs for further details', $placeholders);
         }
 
-        // Check for standard MOFH API error format
-        if (isset($xml->status) && (int) $xml->status === 0) {
-            $msg = (string) $xml->statusmsg;
-            $this.getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $msg));
+        // Check for API errors in the JSON response
+        if (isset($json->error)) {
+            $msg = (string) $json->error;
+            $this->getLog()->crit(sprintf('MOFH json-api error calling action "%s": "%s"', $action, $msg));
             $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $msg];
-
             throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
         }
 
-        // Check for other error formats (sometimes status is missing on error)
-        if ($action !== 'accountstatus' && isset($xml->result) && is_string($xml->result) && (stripos($xml->result, 'failed') !== false || stripos($xml->result, 'error') !== false)) {
-            $msg = (string) $xml->result;
-            $this.getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $msg));
+        // Check for status: 0 error pattern
+        if (isset($json->status) && $json->status == 0) {
+            $msg = $json->errors[0] ?? 'Unknown error';
+            if (is_array($json->errors)) {
+                $msg = implode(', ', $json->errors);
+            }
+            $this->getLog()->crit(sprintf('MOFH json-api error calling action "%s": "%s"', $action, $msg));
             $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $msg];
-
             throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
         }
 
-        // Return the response
-        return $xml;
+        // Check for other simple error messages
+        if (isset($json->result) && is_string($json->result) && (stripos($json->result, 'failed') !== false || stripos($json->result, 'error') !== false)) {
+            $msg = (string) $json->result;
+            $this->getLog()->crit(sprintf('MOFH json-api error calling action "%s": "%s"', $action, $msg));
+            $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $msg];
+            throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
+        }
+
+        // === Special handling for listpkgs ===
+        if ($action === 'listpkgs') {
+            if (is_array($json)) {
+                // Success. Wrap it in an object to match the structure expected
+                // by getPackages() and checkPackageExists().
+                $wrapper = new stdClass();
+                $wrapper->package = $json;
+                return $wrapper;
+            } else {
+                // If it's not an array and not an error, the format is unexpected.
+                $msg = sprintf('Function call "listpkgs" (json-api) response was not in the expected array format, body: %s', $body);
+                $this->getLog()->crit($msg);
+                $placeholders = [':action:' => $action, ':type:' => 'MOFH'];
+                throw new Server_Exception('Failed to :action: on the :type: server, check the error logs for further details', $placeholders);
+            }
+        }
+
+        // Return the successful JSON response for all other actions
+        return $json;
     }
 
     /**
@@ -584,10 +639,12 @@ class Server_Manager_Mofh extends Server_Manager
     private function checkPackageExists(Server_Package $package, bool $create = false): void
     {
         // Get the name of the package
-        $name = $this.getPackageName($package);
+        // Corrected syntax: $this->
+        $name = $this->getPackageName($package);
 
         // Send a request to the MOFH server to list the packages
-        $json = $this.request('listpkgs');
+        // Corrected syntax: $this->
+        $json = $this->request('listpkgs');
         $packages = $json->package;
 
         // Check if the package exists
