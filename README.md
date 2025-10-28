@@ -1,6 +1,6 @@
 # FOSSBilling-MOFH
 
-**Unofficial MyOwnFreeHost (MOFH) Server Manager for FOSSBilling**
+**Unofficial MyOwnFreeHost (MOFH) Server Manager for FOSSBilling (Untested)**
 
 This unofficial module adds full integration between [FOSSBilling](https://www.fossbilling.org) and [MyOwnFreeHost](https://www.myownfreehost.net), allowing you to automatically create, suspend, and manage free hosting accounts through your MOFH reseller API.
 
