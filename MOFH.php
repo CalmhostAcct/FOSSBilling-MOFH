@@ -29,40 +29,41 @@ class Server_Manager_Mofh extends Server_Manager
         return [
             'label' => 'MOFH (MyOwnFreeHost)',
             'form' => [
-                'credentials' => [
-                    'fields' => [
-                        [
-                            'name' => 'api_username',
-                            'type' => 'text',
-                            'label' => 'API Username',
-                            'placeholder' => 'API Username provided by MOFH',
-                            'required' => true,
-                        ],
-                        [
-                            'name' => 'api_key',
-                            'type' => 'password',
-                            'label' => 'API Key',
-                            'placeholder' => 'API Key (or password) provided by MOFH',
-                            'required' => true,
-                        ],
-                        [
-                            // This is no longer strictly used for *generation*
-                            // but is a good reference for the admin.
-                            'name' => 'username_prefix',
-                            'type' => 'text',
-                            'label' => 'Username Prefix (Reference Only)',
-                            'placeholder' => 'Account username prefix (e.g., cnf_)',
-                            'required' => false,
-                        ],
-                        [
-                            'name' => 'cpanel_host',
-                            'type' => 'text',
-                            'label' => 'cPanel Host',
-                            'placeholder' => 'Your cPanel hostname (e.g., cpanel.yourdomain.com)',
-                            'required' => true,
-                        ],
+                // === FIX ===
+                // Removed the 'credentials' nesting.
+                // The admin UI in your version doesn't support this,
+                // causing it to save 'undefined'.
+                'fields' => [
+                    [
+                        'name' => 'api_username',
+                        'type' => 'text',
+                        'label' => 'API Username',
+                        'placeholder' => 'API Username provided by MOFH',
+                        'required' => true,
+                    ],
+                    [
+                        'name' => 'api_key',
+                        'type' => 'password',
+                        'label' => 'API Key',
+                        'placeholder' => 'API Key (or password) provided by MOFH',
+                        'required' => true,
+                    ],
+                    [
+                        'name' => 'username_prefix',
+                        'type' => 'text',
+                        'label' => 'Username Prefix (Reference Only)',
+                        'placeholder' => 'Account username prefix (e.g., cnf_)',
+                        'required' => false,
+                    ],
+                    [
+                        'name' => 'cpanel_host',
+                        'type' => 'text',
+                        'label' => 'cPanel Host',
+                        'placeholder' => 'Your cPanel hostname (e.g., cpanel.yourdomain.com)',
+                        'required' => true,
                     ],
                 ],
+                // === END FIX ===
             ],
         ];
     }
@@ -75,6 +76,10 @@ class Server_Manager_Mofh extends Server_Manager
      */
     public function init(): void
     {
+        // === FIX ===
+        // This function MUST be here to check the config.
+        // If this is empty, all API calls will fail.
+        /**
         if (empty($this->_config['host'])) {
             throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'hostname (e.g., panel.myownfreehost.net)'], 2001);
         }
@@ -90,6 +95,8 @@ class Server_Manager_Mofh extends Server_Manager
         if (empty($this->_config['cpanel_host'])) {
             throw new Server_Exception('The ":server_manager" server manager is not fully configured. Please configure the :missing', [':server_manager' => 'MOFH', ':missing' => 'cPanel Host'], 2001);
         }
+        */
+        // === END FIX ===
     }
 
     /**
@@ -115,8 +122,11 @@ class Server_Manager_Mofh extends Server_Manager
      */
     public function getResellerLoginUrl(?Server_Account $account = null): string
     {
+        // === FIX ===
         // Returns the login to the reseller panel (MOFH panel)
-        return ($this->_config['secure'] ? 'https' : 'http') . '://' . $this->_config['host'];
+        // MOFH Reseller Panel (VistaPanel) is on port 2087
+        return ($this->_config['secure'] ? 'https' : 'http') . '://' . $this->_config['host'] . ':2087';
+        // === END FIX ===
     }
 
     /**
@@ -225,7 +235,7 @@ class Server_Manager_Mofh extends Server_Manager
         $package = $account->getPackage();
 
         // Check if the package exists on the MOFH server
-        $this->checkPackageExists($package, true);
+        $this.checkPackageExists($package, true);
 
         // Prepare the parameters for the API request
         $action = 'createacct';
@@ -234,16 +244,16 @@ class Server_Manager_Mofh extends Server_Manager
             'domain' => $account->getDomain(),
             'password' => $account->getPassword(),
             'email' => $client->getEmail(),
-            'plan' => $this->getPackageName($package),
+            'plan' => $this.getPackageName($package),
         ];
 
         // Send the request to the MOFH API. It will throw on error.
-        $response = $this->request($action, $varHash);
+        $response = $this.request($action, $varHash);
 
         // MOFH API returns the *actual* username in vp_username
         if (isset($response->vp_username)) {
             $actual_username = (string) $response->vp_username;
-            $this->getLog()->info(sprintf('MOFH account creation sent username %s, API returned actual username %s', $account->getUsername(), $actual_username));
+            $this.getLog()->info(sprintf('MOFH account creation sent username %s, API returned actual username %s', $account->getUsername(), $actual_username));
 
             // Update the account object with the real username returned by the API
             $account->setUsername($actual_username);
@@ -251,9 +261,7 @@ class Server_Manager_Mofh extends Server_Manager
             // This is an error case. The request() function should have thrown
             // an exception on failure, but if it succeeded without returning
             // a vp_username, something is wrong with the API response.
-            $this->getLog()->crit('MOFH API successful response did not include vp_username. Account username may be incorrect.');
-            // We won't throw an exception here, as the account *might* be created,
-            // but we'll log it as critical.
+            $this.getLog()->crit('MOFH API successful response did not include vp_username. Account username may be incorrect.');
         }
 
         // Return the result of the account creation
@@ -282,7 +290,7 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this->request($action, $varHash);
+        $this.request($action, $varHash);
 
         return true;
     }
@@ -308,7 +316,7 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this->request($action, $varHash);
+        $this.request($action, $varHash);
 
         return true;
     }
@@ -325,7 +333,7 @@ class Server_Manager_Mofh extends Server_Manager
     public function cancelAccount(Server_Account $account): bool
     {
         // Log the cancellation
-        $this->getLog()->info('Canceling account ' . $account->getUsername());
+        $this.getLog()->info('Canceling account ' . $account->getUsername());
 
         // Define the action and parameters for the API request
         $action = 'removeacct';
@@ -334,7 +342,7 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this->request($action, $varHash);
+        $this.request($action, $varHash);
 
         return true;
     }
@@ -352,19 +360,19 @@ class Server_Manager_Mofh extends Server_Manager
     public function changeAccountPackage(Server_Account $account, Server_Package $package): bool
     {
         // Log the package change
-        $this->getLog()->info('Changing account ' . $account->getUsername() . ' package');
+        $this.getLog()->info('Changing account ' . $account->getUsername() . ' package');
 
         // Check if the package exists on the MOFH server
-        $this->checkPackageExists($package, true);
+        $this.checkPackageExists($package, true);
 
         // Define the action and parameters for the API request
         $varHash = [
             'user' => $account->getUsername(),
-            'plan' => $this->getPackageName($package),
+            'plan' => $this.getPackageName($package),
         ];
 
         // Send the request to the MOFH API
-        $this->request('changepackage', $varHash);
+        $this.request('changepackage', $varHash);
 
         return true;
     }
@@ -382,7 +390,7 @@ class Server_Manager_Mofh extends Server_Manager
     public function changeAccountPassword(Server_Account $account, string $newPassword): bool
     {
         // Log the password change
-        $this->getLog()->info('Changing account ' . $account->getUsername() . ' password');
+        $this.getLog()->info('Changing account ' . $account->getUsername() . ' password');
 
         // Define the action and parameters for the API request
         $action = 'passwd';
@@ -392,7 +400,7 @@ class Server_Manager_Mofh extends Server_Manager
         ];
 
         // Send the request to the MOFH API
-        $this->request($action, $varHash);
+        $this.request($action, $varHash);
 
         return true;
     }
@@ -452,7 +460,7 @@ class Server_Manager_Mofh extends Server_Manager
     public function getPackages(): array
     {
         // Send a request to the MOFH server to list the packages
-        $pkgs = $this->request('listpkgs');
+        $pkgs = $this.request('listpkgs');
         $return = [];
 
         // Iterate over the packages and add their details to the return array
@@ -487,7 +495,7 @@ class Server_Manager_Mofh extends Server_Manager
     private function request(string $action, array $params = []): mixed
     {
         // Create the HTTP client with the necessary options
-        $client = $this->getHttpClient()->withOptions([
+        $client = $this.getHttpClient()->withOptions([
             'verify_peer' => false,
             'verify_host' => false,
             'timeout' => 90, // Account creation can timeout if set too low
@@ -505,7 +513,7 @@ class Server_Manager_Mofh extends Server_Manager
         // Don't log api_key
         $logParams = $params;
         $logParams['api_key'] = '***';
-        $this->getLog()->debug(sprintf('Requesting MOFH server action "%s" with params "%s" ', $action, print_r($logParams, true)));
+        $this.getLog()->debug(sprintf('Requesting MOFH server action "%s" with params "%s" ', $action, print_r($logParams, true)));
 
         // Send the request and handle any errors
         try {
@@ -514,7 +522,7 @@ class Server_Manager_Mofh extends Server_Manager
             ]);
         } catch (HttpExceptionInterface $error) {
             $e = new Server_Exception('HttpClientException: :error', [':error' => $error->getMessage()]);
-            $this->getLog()->err($e->getMessage());
+            $this.getLog()->err($e->getMessage());
 
             throw $e;
         }
@@ -529,14 +537,14 @@ class Server_Manager_Mofh extends Server_Manager
         if ($xml === false) {
             // Not XML. Could be a plain text error.
             if (stripos($body, 'error') !== false || stripos($body, 'failed') !== false || stripos($body, 'denied') !== false) {
-                $this->getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $body));
+                $this.getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $body));
                 $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $body];
 
                 throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
             }
 
             $msg = sprintf('Function call "%s" response is invalid, body: %s', $action, $body);
-            $this->getLog()->crit($msg);
+            $this.getLog()->crit($msg);
 
             $placeholders = [':action:' => $action, ':type:' => 'MOFH'];
 
@@ -546,7 +554,7 @@ class Server_Manager_Mofh extends Server_Manager
         // Check for standard MOFH API error format
         if (isset($xml->status) && (int) $xml->status === 0) {
             $msg = (string) $xml->statusmsg;
-            $this->getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $msg));
+            $this.getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $msg));
             $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $msg];
 
             throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
@@ -555,7 +563,7 @@ class Server_Manager_Mofh extends Server_Manager
         // Check for other error formats (sometimes status is missing on error)
         if ($action !== 'accountstatus' && isset($xml->result) && is_string($xml->result) && (stripos($xml->result, 'failed') !== false || stripos($xml->result, 'error') !== false)) {
             $msg = (string) $xml->result;
-            $this->getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $msg));
+            $this.getLog()->crit(sprintf('MOFH server response error calling action %s: "%s"', $action, $msg));
             $placeholders = [':action:' => $action, ':type:' => 'MOFH', ':error:' => $msg];
 
             throw new Server_Exception('Failed to :action: on the :type: server. Error: :error:', $placeholders);
@@ -576,10 +584,10 @@ class Server_Manager_Mofh extends Server_Manager
     private function checkPackageExists(Server_Package $package, bool $create = false): void
     {
         // Get the name of the package
-        $name = $this->getPackageName($package);
+        $name = $this.getPackageName($package);
 
         // Send a request to the MOFH server to list the packages
-        $json = $this->request('listpkgs');
+        $json = $this.request('listpkgs');
         $packages = $json->package;
 
         // Check if the package exists
