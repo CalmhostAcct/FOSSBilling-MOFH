@@ -90,6 +90,8 @@ class Server_Manager_Mofh extends Server_Manager
             'plan' => $this->getPackageName($package),
         ];
         $json = $this->request('createacct', $params);
+		$this->setUsername($json->result[0]->vp_username);
+		$this->setPassword($account->getPassword());
         return isset($json->result[0]->status) && $json->result[0]->status == 1;
     }
 
@@ -179,7 +181,7 @@ private function request(string $action, array $params = []): mixed
     // Optionally, don't verify SSL certificate (for self-signed on MOFH servers, but should be TRUE in production!)
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
+    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     $body = curl_exec($ch);
     $error = curl_error($ch);
     $errno = curl_errno($ch);
