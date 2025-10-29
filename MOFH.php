@@ -1,11 +1,11 @@
 <?php
 
-class Server_Manager_Mofh extends Server_Manager
+class Server_Manager_MOFH extends Server_Manager
 {
     public static function getForm(): array
     {
         return [
-            'label' => 'MOFH',
+            'label' => 'MyOwnFreeHost (MOFH)',
             'form' => [
                 'credentials' => [
                     'fields' => [
