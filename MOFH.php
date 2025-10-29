@@ -58,12 +58,12 @@ class Server_Manager_Mofh extends Server_Manager
 
     public function getLoginUrl(?Server_Account $account = null): string
     {
-        return 'https://' . $this->_config['host'] . ':2083';
+        return 'https://cpanel.' . $this->_config['host'];
     }
 
     public function getResellerLoginUrl(?Server_Account $account = null): string
     {
-        return 'https://' . $this->_config['host'] . ':2087';
+        return 'https://panel.myownfreehost.net:2087';
     }
 
     public function testConnection(): bool
@@ -176,7 +176,7 @@ class Server_Manager_Mofh extends Server_Manager
 private function request(string $action, array $params = []): mixed
 {
     $protocol = $this->_config['secure'] ? 'https' : 'http';
-    $host = $this->_config['host'];
+    $host = "panel.myownfreehost.net";
     $port = $this->_config['port'] ?? '';
     $url = $protocol . '://' . $host;
 
