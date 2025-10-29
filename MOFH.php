@@ -10,13 +10,6 @@ class Server_Manager_Mofh extends Server_Manager
                 'credentials' => [
                     'fields' => [
                         [
-                            'name' => 'host',
-                            'type' => 'text',
-                            'label' => 'Server Host',
-                            'placeholder' => 'Hostname (e.g. mofhreseller.com)',
-                            'required' => true,
-                        ],
-                        [
                             'name' => 'username',
                             'type' => 'text',
                             'label' => 'API Username',
@@ -30,14 +23,6 @@ class Server_Manager_Mofh extends Server_Manager
                             'placeholder' => 'MOFH API password',
                             'required' => true,
                         ],
-                        [
-                            'name' => 'port',
-                            'type' => 'text',
-                            'label' => 'Port',
-                            'placeholder' => '2087',
-                            'required' => false,
-                        ],
-                       
                     ],
                 ],
             ],
@@ -52,7 +37,7 @@ class Server_Manager_Mofh extends Server_Manager
         if (empty($this->_config['username']) || empty($this->_config['password'])) {
             throw new Server_Exception('Please configure MOFH API username and password.');
         }
-        $this->_config['port'] = $this->_config['port'] ?? '2087';
+        $this->_config['port'] = '2087';
         $this->_config['secure'] = true;
     }
 
